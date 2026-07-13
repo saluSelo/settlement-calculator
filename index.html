@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Immediate Settlement Calculator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b1620;
+  --surface: #10202e;
+  --surface-2: #16293a;
+  --border: #22374a;
+  --amber: #e0a458;
+  --amber-soft: rgba(224,164,88,.14);
+  --teal: #5fb8ae;
+  --teal-soft: rgba(95,184,174,.14);
+  --text: #edf3f7;
+  --text-muted: #7d93a8;
+  --success: #7ed9a8;
+  --error: #ef8c8c;
+  --radius: 16px;
+  --radius-sm: 9px;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+/* ── LOGIN ── */
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 44px 38px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--teal));
+}
+
+.login-mark {
+  width: 52px; height: 52px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.login-title {
+  font-family: 'Fraunces', serif;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  letter-spacing: -.01em;
+}
+
+.login-sub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 32px;
+}
+
+label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+input[type="text"], input[type="password"], input[type="number"] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+
+.login-field { margin-bottom: 18px; }
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: var(--amber);
+  color: #1a1206;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: filter .15s, transform .1s;
+  margin-top: 6px;
+}
+
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:active { transform: scale(.98); }
+
+.error-msg {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--error);
+  text-align: center;
+  display: none;
+}
+
+/* ── APP HEADER ── */
+#app-screen { display: none; align-items: flex-start; }
+
+.app-shell { width: 100%; max-width: 980px; }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.brand-mark {
+  width: 42px; height: 42px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.brand-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  letter-spacing: .04em;
+  margin-top: 2px;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  white-space: nowrap;
+}
+
+.logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+/* ── MAIN GRID ── */
+.app-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .app-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+
+.panel-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+}
+
+.diagram-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ── FORMULA STRIP ── */
+.formula-strip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: 22px;
+}
+
+.formula-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.formula-display {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 21px;
+  color: var(--amber);
+  letter-spacing: .01em;
+}
+
+/* ── FIELD SHEET ── */
+.field-sheet {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+  margin-bottom: 24px;
+}
+
+.field-cell.full { grid-column: 1 / -1; }
+
+.field-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.field-symbol {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--teal);
+}
+
+.field-unit {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.field-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.field-cell input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  padding: 6px 2px;
+}
+
+.field-cell input:focus {
+  box-shadow: none;
+  border-bottom: 1px solid var(--amber);
+}
+
+.calc-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(90deg, var(--amber), #d99248);
+  color: #1a1206;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: filter .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+.calc-btn:hover { filter: brightness(1.06); }
+.calc-btn:active { transform: scale(.99); }
+
+/* ── RESULT ── */
+#result-panel {
+  display: none;
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px dashed var(--teal);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  position: relative;
+}
+
+.result-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.result-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.result-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: var(--success);
+  background: rgba(126,217,168,.12);
+  border: 1px solid rgba(126,217,168,.35);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.result-value {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--success);
+  margin: 6px 0 6px 0;
+  letter-spacing: -.01em;
+}
+
+.result-formula {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  background: transparent;
+  border: 1px solid var(--teal);
+  border-radius: var(--radius-sm);
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.print-btn:hover { background: var(--teal-soft); }
+
+/* ── PRINT AREA ── */
+#printArea { display: none; }
+
+@media print {
+  body { background: #fff; }
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea {
+    display: block !important;
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    background: #fff; color: #000;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen">
+  <div class="login-card">
+    <div class="login-mark">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 20h18M6 20V9l6-5 6 5v11M10 20v-6h4v6" stroke="#e0a458" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="login-eyebrow">Geotechnical Engineering Tool</div>
+    <div class="login-title">Settlement<br/>Calculator</div>
+    <div class="login-sub">Sign in to compute immediate foundation settlement using the theory of elasticity.</div>
+
+    <div class="login-field">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username" />
+    </div>
+    <div class="login-field">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" onkeydown="if(event.key==='Enter') login()" />
+    </div>
+
+    <button class="btn-primary" onclick="login()">Sign In</button>
+    <div class="error-msg" id="login-error">Incorrect username or password.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen">
+  <div class="app-shell">
+
+    <div class="app-header">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 20h18M6 20V9l6-5 6 5v11M10 20v-6h4v6" stroke="#e0a458" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Settlement Calculator</div>
+          <div class="brand-sub">IMMEDIATE SETTLEMENT · Sᵢ</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+
+    <div class="app-grid">
+
+      <!-- DIAGRAM -->
+      <div class="panel">
+        <div class="panel-label">Fig. 1 — Foundation Load Profile</div>
+        <svg viewBox="0 0 300 360" width="100%" height="auto">
+          <!-- ground -->
+          <line x1="10" y1="70" x2="290" y2="70" stroke="#7d93a8" stroke-width="1.2"/>
+          <g stroke="#7d93a8" stroke-width="1">
+            <line x1="14" y1="70" x2="8" y2="78"/><line x1="34" y1="70" x2="28" y2="78"/>
+            <line x1="230" y1="70" x2="224" y2="78"/><line x1="250" y1="70" x2="244" y2="78"/>
+            <line x1="270" y1="70" x2="264" y2="78"/><line x1="286" y1="70" x2="280" y2="78"/>
+          </g>
+
+          <!-- pressure arrows -->
+          <g stroke="#e0a458" stroke-width="1.6">
+            <line x1="115" y1="18" x2="115" y2="46"/><polygon points="115,50 111,42 119,42" fill="#e0a458"/>
+            <line x1="135" y1="18" x2="135" y2="46"/><polygon points="135,50 131,42 139,42" fill="#e0a458"/>
+            <line x1="155" y1="18" x2="155" y2="46"/><polygon points="155,50 151,42 159,42" fill="#e0a458"/>
+            <line x1="175" y1="18" x2="175" y2="46"/><polygon points="175,50 171,42 179,42" fill="#e0a458"/>
+            <line x1="195" y1="18" x2="195" y2="46"/><polygon points="195,50 191,42 199,42" fill="#e0a458"/>
+          </g>
+          <text x="150" y="14" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e0a458">q</text>
+
+          <!-- footing -->
+          <rect x="105" y="50" width="100" height="20" fill="#16293a" stroke="#e0a458" stroke-width="1.4"/>
+          <text x="155" y="63" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#edf3f7">FOOTING</text>
+
+          <!-- width dimension -->
+          <line x1="105" y1="84" x2="205" y2="84" stroke="#7d93a8" stroke-width="1"/>
+          <line x1="105" y1="80" x2="105" y2="88" stroke="#7d93a8" stroke-width="1"/>
+          <line x1="205" y1="80" x2="205" y2="88" stroke="#7d93a8" stroke-width="1"/>
+          <text x="155" y="98" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7d93a8">B</text>
+
+          <!-- soil layer 1 -->
+          <rect x="10" y="70" width="280" height="110" fill="#e0a458" opacity="0.08"/>
+          <text x="220" y="128" font-family="Space Grotesk" font-size="9.5" fill="#e0a458">GRANULAR SOIL</text>
+          <text x="220" y="140" font-family="IBM Plex Mono" font-size="8.5" fill="#7d93a8">E, μ</text>
+
+          <!-- layer boundary -->
+          <line x1="10" y1="180" x2="290" y2="180" stroke="#22374a" stroke-width="1" stroke-dasharray="3 3"/>
+
+          <!-- soil layer 2 -->
+          <rect x="10" y="180" width="280" height="120" fill="#5fb8ae" opacity="0.08"/>
+          <text x="205" y="238" font-family="Space Grotesk" font-size="9.5" fill="#5fb8ae">COMPRESSIBLE LAYER</text>
+          <text x="205" y="250" font-family="IBM Plex Mono" font-size="8.5" fill="#7d93a8">I</text>
+          <text x="211" y="253" font-family="IBM Plex Mono" font-size="6" fill="#7d93a8">f</text>
+
+          <!-- bedrock -->
+          <rect x="10" y="300" width="280" height="30" fill="#7d93a8" opacity="0.14"/>
+          <text x="230" y="319" font-family="IBM Plex Mono" font-size="8" fill="#7d93a8" letter-spacing="1">BEDROCK</text>
+
+          <!-- settlement indicator -->
+          <g id="settle-indicator" opacity="0">
+            <line x1="105" y1="70" x2="205" y2="70" stroke="#7ed9a8" stroke-width="1" stroke-dasharray="2 2"/>
+            <line x1="105" y1="73" x2="205" y2="73" stroke="#7ed9a8" stroke-width="1.4"/>
+            <text x="215" y="76" font-family="IBM Plex Mono" font-size="9" fill="#7ed9a8" id="diagram-si-value">Sᵢ</text>
+          </g>
+        </svg>
+        <div class="diagram-caption" id="diagram-caption">Net pressure <strong style="color:var(--amber)">q</strong> acts over footing width <strong style="color:var(--amber)">B</strong>, inducing immediate settlement <strong style="color:var(--success)">Sᵢ</strong> in the soil beneath.</div>
+      </div>
+
+      <!-- INPUT PANEL -->
+      <div class="panel">
+        <div class="formula-strip">
+          <div class="formula-label">Governing Equation</div>
+          <div class="formula-display">Sᵢ = (q·B / E)(1 − μ²)&nbsp;I<sub style="font-size:14px">f</sub></div>
+        </div>
+
+        <div class="field-sheet">
+          <div class="field-cell">
+            <div class="field-top"><span class="field-symbol">q</span><span class="field-unit">kPa</span></div>
+            <div class="field-name">Net Foundation Pressure</div>
+            <input type="number" id="q" placeholder="e.g. 150" step="any" />
+          </div>
+          <div class="field-cell">
+            <div class="field-top"><span class="field-symbol">B</span><span class="field-unit">m</span></div>
+            <div class="field-name">Width of Foundation</div>
+            <input type="number" id="B" placeholder="e.g. 2.5" step="any" />
+          </div>
+          <div class="field-cell">
+            <div class="field-top"><span class="field-symbol">E</span><span class="field-unit">kPa</span></div>
+            <div class="field-name">Young's Modulus of Soil</div>
+            <input type="number" id="E" placeholder="e.g. 20000" step="any" />
+          </div>
+          <div class="field-cell">
+            <div class="field-top"><span class="field-symbol">μ</span><span class="field-unit">0–0.5</span></div>
+            <div class="field-name">Poisson's Ratio</div>
+            <input type="number" id="mu" placeholder="e.g. 0.3" step="any" min="0" max="0.5" />
+          </div>
+          <div class="field-cell full">
+            <div class="field-top"><span class="field-symbol">I<sub style="font-size:12px">f</sub></span><span class="field-unit">—</span></div>
+            <div class="field-name">Influence Factor</div>
+            <input type="number" id="If" placeholder="e.g. 0.82" step="any" />
+          </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">Calculate Settlement →</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-panel">
+      <div class="result-top">
+        <div class="result-label">Immediate Settlement — Sᵢ</div>
+        <div class="result-badge">COMPUTED</div>
+      </div>
+      <div class="result-value" id="result-value">—</div>
+      <div class="result-formula" id="result-formula"></div>
+      <button class="print-btn" onclick="printResult()">🖨️&nbsp; Print / Save as PDF</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="printArea"></div>
+
+<script>
+const VALID_USER = "admin";
+const VALID_PASS = "1234";
+
+function login() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('login-error');
+
+  if (u === VALID_USER && p === VALID_PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'flex';
+    err.style.display = 'none';
+  } else {
+    err.style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('settle-indicator').style.opacity = '0';
+}
+
+function calculate() {
+  const q  = parseFloat(document.getElementById('q').value);
+  const B  = parseFloat(document.getElementById('B').value);
+  const E  = parseFloat(document.getElementById('E').value);
+  const mu = parseFloat(document.getElementById('mu').value);
+  const If = parseFloat(document.getElementById('If').value);
+
+  if ([q, B, E, mu, If].some(isNaN)) {
+    alert('Please fill in all fields before calculating.');
+    return;
+  }
+  if (E === 0) { alert("Young's Modulus (E) cannot be zero."); return; }
+  if (mu < 0 || mu > 0.5) { alert("Poisson's Ratio (μ) must be between 0 and 0.5."); return; }
+
+  const Si = (q * B / E) * (1 - mu * mu) * If;
+
+  document.getElementById('result-value').textContent = Si.toFixed(6) + ' m';
+  document.getElementById('result-formula').textContent =
+    `Sᵢ = (${q} × ${B} / ${E}) × (1 − ${mu}²) × ${If} = ${Si.toFixed(6)} m`;
+  document.getElementById('result-panel').style.display = 'block';
+
+  const indicator = document.getElementById('settle-indicator');
+  indicator.style.opacity = '1';
+  document.getElementById('diagram-si-value').textContent = 'Sᵢ = ' + Si.toFixed(4) + ' m';
+
+  document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function buildReportHTML() {
+  const q  = document.getElementById('q').value;
+  const B  = document.getElementById('B').value;
+  const E  = document.getElementById('E').value;
+  const mu = document.getElementById('mu').value;
+  const If = document.getElementById('If').value;
+  const result = document.getElementById('result-value').textContent;
+  const date = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #000; max-width: 700px; margin: 0 auto;">
+      <h1 style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; font-size: 24px;">Immediate Settlement Calculation</h1>
+      <p style="text-align: center; color: #666; margin: 12px 0 24px 0; font-size: 12px;">Generated on ${date}</p>
+
+      <div style="border: 2px solid #333; padding: 15px; margin-bottom: 20px; background: #f9f9f9;">
+        <p style="text-align: center; margin: 0 0 10px 0; font-size: 11px; font-weight: bold;">FORMULA</p>
+        <p style="text-align: center; font-size: 16px; margin: 0; font-family: 'Courier New', monospace; font-weight: bold;">
+          S<sub>i</sub> = (q &middot; B / E) &middot; (1 &minus; &mu;&sup2;) &middot; I<sub>f</sub>
+        </p>
+      </div>
+
+      <h2 style="margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Input Values</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+        <tr style="background: #e8e8e8;">
+          <td style="padding: 8px; border: 1px solid #999; font-weight: bold;">Variable</td>
+          <td style="padding: 8px; border: 1px solid #999; font-weight: bold;">Value</td>
+          <td style="padding: 8px; border: 1px solid #999; font-weight: bold;">Unit</td>
+        </tr>
+        <tr><td style="padding:8px;border:1px solid #ccc;">q (Net Foundation Pressure)</td><td style="padding:8px;border:1px solid #ccc;text-align:right;">${q}</td><td style="padding:8px;border:1px solid #ccc;">kPa</td></tr>
+        <tr><td style="padding:8px;border:1px solid #ccc;">B (Width of Foundation)</td><td style="padding:8px;border:1px solid #ccc;text-align:right;">${B}</td><td style="padding:8px;border:1px solid #ccc;">m</td></tr>
+        <tr><td style="padding:8px;border:1px solid #ccc;">E (Young's Modulus)</td><td style="padding:8px;border:1px solid #ccc;text-align:right;">${E}</td><td style="padding:8px;border:1px solid #ccc;">kPa</td></tr>
+        <tr><td style="padding:8px;border:1px solid #ccc;">&mu; (Poisson's Ratio)</td><td style="padding:8px;border:1px solid #ccc;text-align:right;">${mu}</td><td style="padding:8px;border:1px solid #ccc;">&mdash;</td></tr>
+        <tr><td style="padding:8px;border:1px solid #ccc;">I<sub>f</sub> (Influence Factor)</td><td style="padding:8px;border:1px solid #ccc;text-align:right;">${If}</td><td style="padding:8px;border:1px solid #ccc;">&mdash;</td></tr>
+      </table>
+
+      <h2 style="margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Result</h2>
+      <div style="background: #f0f8ff; border-left: 4px solid #0066cc; padding: 15px; margin-bottom: 20px;">
+        <p style="margin: 0 0 10px 0; font-size: 11px; font-weight: bold;">Immediate Settlement (S<sub>i</sub>)</p>
+        <p style="font-size: 24px; font-weight: bold; color: #0066cc; margin: 0; font-family: 'Courier New', monospace;">${result}</p>
+      </div>
+
+      <div style="background: #fff; border: 1px solid #ccc; padding: 12px; margin-top: 20px; font-size: 11px; color: #444;">
+        <p style="margin: 0 0 8px 0; font-weight: bold;">Calculation Details:</p>
+        <p style="margin: 0; font-family: 'Courier New', monospace;">Sᵢ = (${q} &times; ${B} / ${E}) &times; (1 &minus; ${mu}&sup2;) &times; ${If}</p>
+      </div>
+    </div>
+  `;
+}
+
+function hasResult() {
+  if (document.getElementById('result-panel').style.display !== 'block') {
+    alert('Please calculate a result first.');
+    return false;
+  }
+  return true;
+}
+
+function printResult() {
+  if (!hasResult()) return;
+  document.getElementById('printArea').innerHTML = buildReportHTML();
+  window.print();
+}
+</script>
+
+</body>
+</html>
