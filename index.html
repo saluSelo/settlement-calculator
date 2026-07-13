@@ -412,7 +412,91 @@ input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft
 
 .print-btn:hover { background: var(--teal-soft); }
 
-/* ── PRINT AREA ── */
+/* ── RECOMMENDATION ── */
+#recommendation-panel {
+  display: none;
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+}
+
+.rec-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rec-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.rec-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.rec-title {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.rec-body {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.rec-scale-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #7ed9a8 0%, #7ed9a8 33%, #e0a458 33%, #e0a458 66%, #ef8c8c 66%, #ef8c8c 100%);
+  margin-bottom: 8px;
+}
+
+.rec-scale-fill { display: none; }
+
+.rec-scale-marker {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 16px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--surface);
+  transition: left .3s ease;
+}
+
+.rec-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.rec-disclaimer {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: .7;
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+  line-height: 1.5;
+}
 #printArea { display: none; }
 
 @media print {
@@ -587,6 +671,28 @@ input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft
       <button class="print-btn" onclick="printResult()">🖨️&nbsp; Print / Save as PDF</button>
     </div>
 
+    <!-- RECOMMENDATION -->
+    <div id="recommendation-panel">
+      <div class="rec-top">
+        <div class="rec-icon" id="rec-icon">—</div>
+        <div>
+          <div class="rec-label" id="rec-label">ASSESSMENT</div>
+          <div class="rec-title" id="rec-title">—</div>
+        </div>
+      </div>
+      <div class="rec-body" id="rec-body">—</div>
+      <div class="rec-scale">
+        <div class="rec-scale-track">
+          <div class="rec-scale-fill" id="rec-scale-fill"></div>
+          <div class="rec-scale-marker" id="rec-scale-marker"></div>
+        </div>
+        <div class="rec-scale-labels">
+          <span>0</span><span>25 mm</span><span>50 mm</span><span>75 mm+</span>
+        </div>
+      </div>
+      <div class="rec-disclaimer">For guidance only — verify against project-specific geotechnical criteria and applicable design codes.</div>
+    </div>
+
   </div>
 </div>
 
@@ -616,6 +722,7 @@ function logout() {
   document.getElementById('username').value = '';
   document.getElementById('password').value = '';
   document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('recommendation-panel').style.display = 'none';
   document.getElementById('settle-indicator').style.opacity = '0';
 }
 
@@ -645,6 +752,54 @@ function calculate() {
   document.getElementById('diagram-si-value').textContent = 'Sᵢ = ' + Si.toFixed(4) + ' m';
 
   document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  showRecommendation(Si);
+}
+
+function showRecommendation(SiMeters) {
+  const mm = Math.abs(SiMeters) * 1000; // convert to mm for common engineering thresholds
+  const panel = document.getElementById('recommendation-panel');
+  const icon = document.getElementById('rec-icon');
+  const label = document.getElementById('rec-label');
+  const title = document.getElementById('rec-title');
+  const body = document.getElementById('rec-body');
+  const marker = document.getElementById('rec-scale-marker');
+
+  let level, title_, body_, iconChar, color;
+
+  if (mm <= 25) {
+    level = 'low';
+    iconChar = '✓';
+    color = '#7ed9a8';
+    title_ = 'Within typical allowable limits';
+    body_ = `A computed settlement of ${mm.toFixed(1)} mm is generally within the commonly used allowable range (~25 mm) for isolated footings on granular soils. This suggests the foundation design is likely adequate, though final acceptance should follow project-specific serviceability criteria.`;
+  } else if (mm <= 50) {
+    level = 'moderate';
+    iconChar = '!';
+    color = '#e0a458';
+    title_ = 'Approaching the typical allowable range';
+    body_ = `A computed settlement of ${mm.toFixed(1)} mm falls in a range (25–50 mm) that is sometimes acceptable for clays or larger structures, but exceeds common limits for sands. Recommend checking against differential settlement limits and the governing design code before finalizing.`;
+  } else {
+    level = 'high';
+    iconChar = '✕';
+    color = '#ef8c8c';
+    title_ = 'Exceeds common allowable thresholds';
+    body_ = `A computed settlement of ${mm.toFixed(1)} mm exceeds typical allowable limits (~50–75 mm) used in practice. This may risk structural or architectural damage. Recommend revisiting foundation dimensions, bearing pressure, or soil improvement options, and confirming against applicable code limits.`;
+  }
+
+  icon.textContent = iconChar;
+  icon.style.background = color + '22';
+  icon.style.color = color;
+  icon.style.border = '1px solid ' + color + '55';
+  label.textContent = 'ASSESSMENT — ' + level.toUpperCase() + ' SETTLEMENT';
+  title.textContent = title_;
+  body.textContent = body_;
+
+  // position marker along 0-75mm+ scale (clamped)
+  const pct = Math.min(mm / 75, 1) * 100;
+  marker.style.left = `calc(${pct}% - 1.5px)`;
+
+  panel.style.display = 'block';
 }
 
 function buildReportHTML() {
@@ -655,6 +810,8 @@ function buildReportHTML() {
   const If = document.getElementById('If').value;
   const result = document.getElementById('result-value').textContent;
   const date = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  const recTitle = document.getElementById('rec-title').textContent;
+  const recBody = document.getElementById('rec-body').textContent;
 
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #000; max-width: 700px; margin: 0 auto;">
@@ -692,6 +849,13 @@ function buildReportHTML() {
         <p style="margin: 0 0 8px 0; font-weight: bold;">Calculation Details:</p>
         <p style="margin: 0; font-family: 'Courier New', monospace;">Sᵢ = (${q} &times; ${B} / ${E}) &times; (1 &minus; ${mu}&sup2;) &times; ${If}</p>
       </div>
+
+      <h2 style="margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Assessment</h2>
+      <div style="border: 1px solid #ccc; padding: 14px; font-size: 12px; line-height: 1.6;">
+        <p style="margin: 0 0 6px 0; font-weight: bold;">${recTitle}</p>
+        <p style="margin: 0; color: #444;">${recBody}</p>
+      </div>
+      <p style="font-size: 10px; color: #888; margin-top: 10px; line-height: 1.5;">For guidance only — verify against project-specific geotechnical criteria and applicable design codes.</p>
     </div>
   `;
 }
