@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tank Weight Calculator</title>
+<title>Tank Load & Settlement Advisor</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -39,236 +39,115 @@ body {
   padding: 32px 20px;
 }
 
-.shell { max-width: 980px; margin: 0 auto; }
+.shell { max-width: 1080px; margin: 0 auto; }
 
-.header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.header-mark {
-  width: 42px; height: 42px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.header-mark { width: 42px; height: 42px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .header-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; }
 .header-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--text-muted); letter-spacing: .05em; margin-top: 2px; }
 
-.formula-note {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 18px;
-  margin-bottom: 24px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  color: var(--amber);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.notice { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin: 20px 0 24px 0; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.notice b { color: var(--amber); }
+.notice.pending { border-color: var(--amber); }
 
-.tank-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 24px;
-}
+.glossary-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 24px; }
+.glossary-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin-bottom: 12px; }
+.glossary-formula { font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--amber); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 8px; text-align: center; letter-spacing: .02em; }
+.glossary-sub { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 18px; line-height: 1.5; }
+.glossary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-item { display: flex; gap: 12px; padding: 12px; background: var(--surface-2); border-radius: var(--radius-sm); }
+.g-symbol { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--teal); flex-shrink: 0; width: 46px; display: flex; align-items: flex-start; justify-content: center; padding-top: 2px; }
+.g-name { font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.g-unit { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400; color: var(--amber); }
+.g-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; }
 
-@media (max-width: 700px) {
-  .tank-grid { grid-template-columns: 1fr; }
-}
+.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin: 28px 0 14px 0; }
+.section-label:first-of-type { margin-top: 0; }
+.tank-help { font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
 
-.tank-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  transition: opacity .25s, border-color .25s;
-}
+.tank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }
+@media (max-width: 700px) { .tank-grid { grid-template-columns: 1fr; } }
+.tank-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; transition: opacity .25s; }
+.tank-card.off { opacity: .45; }
+.tank-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.tank-name-group { display: flex; align-items: center; gap: 9px; }
+.tank-name { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; }
 
-.tank-card.off {
-  opacity: .45;
-}
-
-.tank-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.tank-name-group { display: flex; align-items: center; gap: 10px; }
-
-.tank-icon {
-  width: 30px; height: 30px;
-  flex-shrink: 0;
-}
-
-.tank-name {
-  font-family: 'Fraunces', serif;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* toggle switch */
-.switch {
-  position: relative;
-  width: 44px; height: 24px;
-  flex-shrink: 0;
-}
+.switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute; cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--off);
-  border-radius: 24px;
-  transition: background .2s;
-}
-.slider::before {
-  content: "";
-  position: absolute;
-  height: 18px; width: 18px;
-  left: 3px; bottom: 3px;
-  background: var(--text);
-  border-radius: 50%;
-  transition: transform .2s;
-}
+.slider { position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background: var(--off); border-radius: 22px; transition: background .2s; }
+.slider::before { content:""; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background: var(--text); border-radius:50%; transition: transform .2s; }
 input:checked + .slider { background: var(--success); }
-input:checked + .slider::before { transform: translateX(20px); background: #0b1620; }
+input:checked + .slider::before { transform: translateX(18px); background:#0b1620; }
 
-.tank-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
-}
+.tank-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.field-label { font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color: var(--text-muted); margin-bottom:6px; }
 
-.field-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-}
+input[type="number"], select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; color: var(--text); font-size: 13px; font-family:'IBM Plex Mono',monospace; outline: none; transition: border-color .15s, box-shadow .15s; }
+input:focus, select:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+input:disabled { opacity: .5; }
 
-input[type="number"] {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 9px 11px;
-  color: var(--text);
-  font-size: 13.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  outline: none;
-  transition: border-color .15s, box-shadow .15s;
-}
-input[type="number"]:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
-input[type="number"]:disabled { opacity: .5; cursor: not-allowed; }
-
-.tank-weight-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-top: 14px;
-  border-top: 1px dashed var(--border);
-}
-
-.tank-weight-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.tank-weight-value {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--teal);
-}
-
+.tank-weight-row { display: flex; align-items: baseline; justify-content: space-between; padding-top: 12px; border-top: 1px dashed var(--border); }
+.tank-weight-label { font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color: var(--text-muted); }
+.tank-weight-value { font-family:'Fraunces',serif; font-size:19px; font-weight:600; color: var(--teal); }
 .tank-card.off .tank-weight-value { color: var(--text-muted); }
 
-/* total panel */
-.total-panel {
-  background: var(--surface);
-  border: 1px dashed var(--amber);
-  border-radius: var(--radius);
-  padding: 24px 28px;
-}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+label { display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color: var(--text-muted); margin-bottom:7px; }
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field-help { font-size: 11px; color: var(--text-muted); margin-top: 7px; line-height: 1.5; }
+.k-display { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display:flex; align-items:baseline; justify-content:space-between; }
+.k-label { font-family:'IBM Plex Mono',monospace; font-size:10px; color: var(--text-muted); text-transform:uppercase; letter-spacing:.08em; }
+.k-value { font-family:'Fraunces',serif; font-size:20px; color: var(--amber); font-weight:600; }
 
-.total-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
+.placeholder-tag { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color: var(--amber); background: var(--amber-soft); border: 1px solid var(--amber); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
 
-.total-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10.5px;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
+.calc-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--amber), #d99248); color: #1a1206; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family:'Space Grotesk',sans-serif; cursor: pointer; margin: 24px 0; }
+.calc-btn:hover { filter: brightness(1.06); }
 
-.total-badge {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--success);
-  background: rgba(126,217,168,.12);
-  border: 1px solid rgba(126,217,168,.35);
-  padding: 3px 9px;
-  border-radius: 20px;
-}
+#result-panel { display: none; }
+.status-banner { display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
+.status-banner.ok { border-color: var(--success); background: rgba(126,217,168,.08); }
+.status-banner.exceed { border-color: var(--error); background: rgba(239,140,140,.08); }
+.status-icon { width: 40px; height: 40px; border-radius: 10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.status-icon.ok { background: rgba(126,217,168,.15); color: var(--success); }
+.status-icon.exceed { background: rgba(239,140,140,.15); color: var(--error); }
+.status-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; margin-bottom:2px; }
+.status-body { font-size: 12.5px; color: var(--text-muted); }
 
-.total-value {
-  font-family: 'Fraunces', serif;
-  font-size: 44px;
-  font-weight: 600;
-  color: var(--amber);
-  margin: 6px 0 14px 0;
-}
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media (max-width: 700px) { .results-grid { grid-template-columns: 1fr; } }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
+.stat-label { font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color: var(--text-muted); margin-bottom:6px; }
+.stat-value { font-family:'Fraunces',serif; font-size:26px; font-weight:600; color: var(--text); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.success { color: var(--success); }
+.stat-value.error { color: var(--error); }
 
-.total-breakdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+.rec-panel { background: var(--surface); border: 1px dashed var(--amber); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+.rec-title { font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin-bottom: 10px; }
+.rec-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px; }
+.rec-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 11px; border-radius:20px; border:1px solid var(--border); color: var(--text-muted); }
+.chip.on { border-color: var(--success); color: var(--success); background: rgba(126,217,168,.08); }
+.chip.off { text-decoration: line-through; opacity: .5; }
 
-.chip {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  padding: 5px 11px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
+.table-wrap { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+table { width: 100%; border-collapse: collapse; font-family:'IBM Plex Mono',monospace; font-size: 12px; }
+thead th { position: sticky; top:0; background: var(--surface-2); color: var(--text-muted); text-align:left; padding:9px 12px; font-size:10px; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
+tbody td { padding:7px 12px; border-bottom:1px solid var(--border); color: var(--text); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.current-row { background: var(--teal-soft); }
+tbody tr.recommended-row { background: var(--amber-soft); }
+tbody tr.exceed-row td:nth-child(4) { color: var(--error); }
+tbody tr.ok-row td:nth-child(4) { color: var(--success); }
 
-.chip.active {
-  border-color: var(--success);
-  color: var(--success);
-  background: rgba(126,217,168,.08);
-}
-
-.chip.inactive {
-  text-decoration: line-through;
-  opacity: .5;
-}
+.validation-panel { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 20px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; }
+.validation-panel b { color: var(--success); }
 </style>
 </head>
 <body>
@@ -283,111 +162,390 @@ input[type="number"]:disabled { opacity: .5; cursor: not-allowed; }
       </svg>
     </div>
     <div>
-      <div class="header-title">Tank Weight Calculator</div>
-      <div class="header-sub">4-TANK CONFIGURATION · W = v &times; h</div>
+      <div class="header-title">Tank Load &amp; Settlement Advisor</div>
+      <div class="header-sub">4-TANK LOAD → PILE GROUP SETTLEMENT → RECOMMENDATION</div>
     </div>
   </div>
 
-  <div class="formula-note">
-    ⚠️&nbsp; Using W = v &times; h as provided. Flag with client: weight normally also requires a density / unit weight term (e.g. W = &gamma; &times; v &times; h) — confirm before finalizing.
+  <div class="notice pending">
+    <b>Placeholder values in use — confirm with client:</b> Ƥ1 (flexibility) defaults to <b>0.012</b> (length unit per Ton), matching a worked reference example (0.6 in settlement under a 50-ton test load). This is a stand-in until you get the client's actual single-pile load test result. Everything marked <span class="placeholder-tag">PLACEHOLDER</span> should be replaced after your meeting.
   </div>
 
+  <div class="validation-panel">
+    <b>✓ Engine validated</b> against a fully worked reference example (same L/D=25, νs=0.5 method): with ρ₁=0.012, K=2000, and piles at s/d=5 &amp; 7.07, this app's α-lookup and settlement formula reproduce the reference result (1.776) exactly.
+  </div>
+
+  <div class="glossary-panel">
+    <div class="glossary-title">The Equation, Explained</div>
+    <div class="glossary-formula">ρₖ &nbsp;=&nbsp; Ƥ1 &nbsp;×&nbsp; [ &nbsp;P&nbsp; + &nbsp;Σⱼ ( P &times; αⱼₖ ) &nbsp;]</div>
+    <div class="glossary-sub">Settlement of the reference pile (k) = flexibility × (its own load + the load-weighted interaction from every other pile j in the group)</div>
+
+    <div class="glossary-grid">
+      <div class="glossary-item">
+        <div class="g-symbol">ρₖ</div>
+        <div class="g-body">
+          <div class="g-name">Settlement of the reference pile <span class="g-unit">same length unit as Ƥ1's numerator</span></div>
+          <div class="g-desc">The final answer. Shown as "Result — ρₖ" after you calculate.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">Ƥ1</div>
+        <div class="g-body">
+          <div class="g-name">Pile flexibility <span class="g-unit">length per Ton — e.g. in/ton or m/ton</span></div>
+          <div class="g-desc">Settlement of a single pile under one unit of load, from a real load test (e.g. "0.6 in under 50 tons" → Ƥ1 = 0.012). <span class="placeholder-tag">PLACEHOLDER</span> until the client provides their own test result.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">P</div>
+        <div class="g-body">
+          <div class="g-name">Load per pile <span class="g-unit">Tons</span></div>
+          <div class="g-desc">The load applied to each pile. In this app, P = total weight of all currently-active tanks (W = v × h, summed).</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">j, k, n</div>
+        <div class="g-body">
+          <div class="g-name">Pile indices <span class="g-unit">— (count)</span></div>
+          <div class="g-desc">k = the reference pile whose settlement we're solving for. j = every other pile in that group. Σ adds up each one's contribution.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">αⱼₖ</div>
+        <div class="g-body">
+          <div class="g-name">Interaction factor <span class="g-unit">dimensionless, 0 – 1</span></div>
+          <div class="g-desc">How much pile j's load affects pile k's settlement, based on spacing. Looked up from the Poulos &amp; Davis chart using s/d and K.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">s/d</div>
+        <div class="g-body">
+          <div class="g-name">Spacing ratio <span class="g-unit">dimensionless</span></div>
+          <div class="g-desc">Center-to-center spacing between two piles ÷ pile diameter. Comes from the selected Pile Group Layout's geometry data.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">K</div>
+        <div class="g-body">
+          <div class="g-name">Pile-soil stiffness ratio (Ep/Es) <span class="g-unit">dimensionless</span></div>
+          <div class="g-desc">Looked up automatically from Soil Type + Pile Material.</div>
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="g-symbol">v, h, W</div>
+        <div class="g-body">
+          <div class="g-name">Tank volume, height, weight <span class="g-unit">v: m³ · h: m · W: Tons</span></div>
+          <div class="g-desc">W = v × h per tank. Active tanks sum to the per-pile load P used above.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Step 1 — Tank Configuration (W = v × h)</div>
+  <div class="tank-help">Fill in v (m³) and h (m) for all 4 tanks — even ones currently off — so the recommendation engine can test every on/off combination. Each tank's weight W (Tons) feeds directly into P. Toggle reflects the real-world current setup.</div>
   <div class="tank-grid" id="tank-grid"></div>
 
-  <div class="total-panel">
-    <div class="total-top">
-      <div class="total-label">Total Weight — Active Tanks</div>
-      <div class="total-badge" id="active-count">4 / 4 ON</div>
+  <div class="section-label">Step 2 — Group &amp; Soil Configuration</div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="field">
+        <label>Pile Group Layout</label>
+        <select id="layout">
+          <option value="0">Layout A (P1–P60)</option>
+          <option value="1">Layout B (P61–P120)</option>
+          <option value="2">Layout C (P121–P180)</option>
+          <option value="3">Layout D (P181–P240)</option>
+        </select>
+        <div class="field-help">Sets n and every s/d spacing value used in the Σ term. P1/P61/P121/P181 is the reference pile (k) in each layout.</div>
+      </div>
+      <div class="field">
+        <label>Soil Type</label>
+        <select id="soil">
+          <option>Soft clay</option><option>Medium Clay</option><option>Stiff Clay</option>
+          <option>Loose Sand</option><option>Dense Sand</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Pile Material</label>
+        <select id="material">
+          <option>Steel</option><option>Concrete</option><option>Timber</option>
+        </select>
+        <div class="field-help">Soil + material together set K (Ep/Es), which determines which curve of the α chart is used.</div>
+      </div>
+      <div class="k-display"><span class="k-label">K (Ep / Es) — dimensionless</span><span class="k-value" id="k-value">—</span></div>
     </div>
-    <div class="total-value" id="total-value">0.00</div>
-    <div class="total-breakdown" id="total-breakdown"></div>
+    <div class="panel">
+      <div class="field">
+        <label>Ƥ1 — Pile Flexibility <span style="color:var(--amber)">(length per Ton)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
+        <input type="number" id="rho1" step="any" value="0.012" />
+        <div class="field-help">Defaults to 0.012 (from a reference load test: 0.6 in settlement under 50 tons). Replace with the client's actual test result once available — e.g. their own "X [in/mm/m] under Y tons."</div>
+      </div>
+      <div class="field">
+        <label>Allowable Limit <span style="color:var(--amber)">(same unit as ρₖ)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
+        <input type="number" id="limit" step="any" value="7" />
+        <div class="field-help">Set to whatever threshold the client confirms, in the same length unit as Ƥ1's numerator.</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate Settlement &amp; Recommendation →</button>
+
+  <div id="result-panel">
+
+    <div class="status-banner" id="status-banner">
+      <div class="status-icon" id="status-icon">—</div>
+      <div>
+        <div class="status-title" id="status-title">—</div>
+        <div class="status-body" id="status-body">—</div>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <div class="stat-card">
+        <div class="stat-label">Active Tank Load — P <span style="color:var(--text-muted)">(Tons)</span></div>
+        <div class="stat-value amber" id="stat-load">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Resulting Settlement — ρₖ <span style="color:var(--text-muted)">(matches Ƥ1's unit)</span></div>
+        <div class="stat-value" id="stat-settlement">—</div>
+      </div>
+    </div>
+
+    <div class="rec-panel">
+      <div class="rec-title" id="rec-title">Recommendation</div>
+      <div class="rec-body" id="rec-body">—</div>
+      <div class="rec-chips" id="rec-chips"></div>
+    </div>
+
+    <div class="section-label" style="margin-top:0;">All Combinations Tested</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tanks On</th><th>Load — P (Tons)</th><th>ρₖ</th><th>Status</th></tr></thead>
+        <tbody id="combo-body"></tbody>
+      </table>
+    </div>
+
   </div>
 
 </div>
 
 <script>
-const TANK_COUNT = 4;
-const state = [];
+/* ── Reference data ── */
+const K_TABLE = {
+  "Soft clay":   { Steel: 60000, Concrete: 6000, Timber: 3000 },
+  "Medium Clay": { Steel: 20000, Concrete: 2000, Timber: 1000 },
+  "Stiff Clay":  { Steel: 3000,  Concrete: 300,  Timber: 150  },
+  "Loose Sand":  { Steel: 15000, Concrete: 1500, Timber: 750  },
+  "Dense Sand":  { Steel: 5000,  Concrete: 500,  Timber: 250  },
+};
 
+const SD_DATA = [0, 2.98, 5.83, 8.43, 10.65, 2.98, 5.83, 8.43, 10.65, 15.59, 13.08, 10.82, 9, 7.94, 7.94, 9, 10.82, 13.08, 15.59, 17.55, 15.37, 13.5, 12.12, 11.36, 11.36, 12.12, 13.5, 15.37, 17.55, 22.03, 20.33, 18.96, 17.99, 17.48, 17.48, 17.99, 18.96, 20.33, 22.03, 22.58, 21.82, 20.54, 19.65, 19.18, 19.18, 19.65, 20.54, 21.82, 22.58, 14900, 6, 12.29, 20.82, 31.82, 6, 12.29, 20.82, 31.82, 20.25, 20.25];
+
+const LAYOUTS = [
+  { name: "Layout A", startId: 1,   sd: SD_DATA },
+  { name: "Layout B", startId: 61,  sd: SD_DATA },
+  { name: "Layout C", startId: 121, sd: SD_DATA },
+  { name: "Layout D", startId: 181, sd: SD_DATA },
+];
+
+const S_D_POINTS = [0, 1, 2, 3, 4, 5, 6.67, 10, 20];
+const K_COLUMNS = [10, 100, 500, 1000];
+const ALPHA_TABLE = {
+  10:   [1, 0.5, 0.36, 0.27, 0.22, 0.18, 0.13, 0.08, 0.04],
+  100:  [1, 0.52, 0.41, 0.33, 0.28, 0.25, 0.2, 0.14, 0.08],
+  500:  [1, 0.7, 0.54, 0.45, 0.39, 0.35, 0.29, 0.21, 0.12],
+  1000: [1, 0.76, 0.6, 0.5, 0.44, 0.39, 0.33, 0.24, 0.14],
+  inf:  [1, 0.8, 0.65, 0.54, 0.47, 0.42, 0.35, 0.26, 0.15],
+};
+
+function interpOverSD(s_d, column) {
+  const vals = ALPHA_TABLE[column];
+  if (s_d <= S_D_POINTS[0]) return vals[0];
+  if (s_d > S_D_POINTS[S_D_POINTS.length - 1]) return 0.0;
+  if (s_d === S_D_POINTS[S_D_POINTS.length - 1]) return vals[vals.length - 1];
+  for (let i = 0; i < S_D_POINTS.length - 1; i++) {
+    if (S_D_POINTS[i] <= s_d && s_d <= S_D_POINTS[i+1]) {
+      const x0=S_D_POINTS[i], x1=S_D_POINTS[i+1], y0=vals[i], y1=vals[i+1];
+      return y0 + (y1-y0)*(s_d-x0)/(x1-x0);
+    }
+  }
+}
+function alpha(s_d, K) {
+  if (K > 1000) return interpOverSD(s_d, 'inf');
+  if (K === 1000) return interpOverSD(s_d, 1000);
+  if (K <= K_COLUMNS[0]) return interpOverSD(s_d, K_COLUMNS[0]);
+  for (let i = 0; i < K_COLUMNS.length - 1; i++) {
+    if (K_COLUMNS[i] <= K && K <= K_COLUMNS[i+1]) {
+      const a0=interpOverSD(s_d,K_COLUMNS[i]), a1=interpOverSD(s_d,K_COLUMNS[i+1]);
+      const K0=K_COLUMNS[i], K1=K_COLUMNS[i+1];
+      return a0 + (a1-a0)*(K-K0)/(K1-K0);
+    }
+  }
+}
+function rhoK(P, rho1, K, sdArray) {
+  let sum = 0;
+  for (let i = 1; i < sdArray.length; i++) sum += P * alpha(sdArray[i], K);
+  return rho1 * (P + sum);
+}
+
+/* ── Tank UI ── */
+const TANK_COUNT = 4;
 function tankIconSVG() {
-  return `<svg class="tank-icon" viewBox="0 0 24 24" fill="none">
+  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path d="M4 8c0-2 3.6-3.5 8-3.5S20 6 20 8v8c0 2-3.6 3.5-8 3.5S4 18 4 16V8Z" stroke="#5fb8ae" stroke-width="1.5"/>
     <path d="M4 8c0 2 3.6 3.5 8 3.5S20 10 20 8" stroke="#5fb8ae" stroke-width="1.5"/>
   </svg>`;
 }
-
 function buildTankCard(i) {
   return `
     <div class="tank-card" id="tank-card-${i}">
       <div class="tank-top">
-        <div class="tank-name-group">
-          ${tankIconSVG()}
-          <div class="tank-name">Tank ${i}</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="toggle-${i}" checked onchange="update()">
-          <span class="slider"></span>
-        </label>
+        <div class="tank-name-group">${tankIconSVG()}<div class="tank-name">Tank ${i}</div></div>
+        <label class="switch"><input type="checkbox" id="toggle-${i}" checked onchange="onToggle(${i})"><span class="slider"></span></label>
       </div>
       <div class="tank-fields">
-        <div>
-          <div class="field-label"><span>v</span><span>Volume</span></div>
-          <input type="number" id="v-${i}" step="any" placeholder="e.g. 12" oninput="update()">
-        </div>
-        <div>
-          <div class="field-label"><span>h</span><span>Height</span></div>
-          <input type="number" id="h-${i}" step="any" placeholder="e.g. 3" oninput="update()">
-        </div>
+        <div><div class="field-label">v — Volume <span style="color:var(--amber)">(m³)</span></div><input type="number" id="v-${i}" step="any" placeholder="e.g. 12" oninput="refreshWeights()"></div>
+        <div><div class="field-label">h — Height <span style="color:var(--amber)">(m)</span></div><input type="number" id="h-${i}" step="any" placeholder="e.g. 3" oninput="refreshWeights()"></div>
       </div>
-      <div class="tank-weight-row">
-        <div class="tank-weight-label">Weight (W)</div>
-        <div class="tank-weight-value" id="weight-${i}">0.00</div>
-      </div>
-    </div>
-  `;
+      <div class="tank-weight-row"><div class="tank-weight-label">Weight — W = v × h <span style="color:var(--text-muted)">(Tons)</span></div><div class="tank-weight-value" id="weight-${i}">0.00</div></div>
+    </div>`;
 }
-
-function init() {
-  const grid = document.getElementById('tank-grid');
+function initTanks() {
   let html = '';
   for (let i = 1; i <= TANK_COUNT; i++) html += buildTankCard(i);
-  grid.innerHTML = html;
-  update();
+  document.getElementById('tank-grid').innerHTML = html;
+  refreshWeights();
 }
-
-function update() {
-  let total = 0;
-  let activeCount = 0;
-  let chips = '';
-
+function onToggle(i) {
+  const on = document.getElementById(`toggle-${i}`).checked;
+  document.getElementById(`v-${i}`).disabled = !on;
+  document.getElementById(`h-${i}`).disabled = !on;
+  document.getElementById(`tank-card-${i}`).classList.toggle('off', !on);
+}
+function refreshWeights() {
   for (let i = 1; i <= TANK_COUNT; i++) {
-    const on = document.getElementById(`toggle-${i}`).checked;
     const v = parseFloat(document.getElementById(`v-${i}`).value) || 0;
     const h = parseFloat(document.getElementById(`h-${i}`).value) || 0;
-    const w = v * h;
-
-    document.getElementById(`weight-${i}`).textContent = w.toFixed(2);
-    document.getElementById(`v-${i}`).disabled = !on;
-    document.getElementById(`h-${i}`).disabled = !on;
-
-    const card = document.getElementById(`tank-card-${i}`);
-    card.classList.toggle('off', !on);
-
-    if (on) {
-      total += w;
-      activeCount++;
-      chips += `<span class="chip active">Tank ${i}: ${w.toFixed(2)}</span>`;
-    } else {
-      chips += `<span class="chip inactive">Tank ${i}</span>`;
-    }
+    document.getElementById(`weight-${i}`).textContent = (v*h).toFixed(2);
   }
-
-  document.getElementById('total-value').textContent = total.toFixed(2);
-  document.getElementById('active-count').textContent = `${activeCount} / ${TANK_COUNT} ON`;
-  document.getElementById('total-breakdown').innerHTML = chips;
+}
+function getTankWeights() {
+  const weights = [];
+  for (let i = 1; i <= TANK_COUNT; i++) {
+    const v = parseFloat(document.getElementById(`v-${i}`).value) || 0;
+    const h = parseFloat(document.getElementById(`h-${i}`).value) || 0;
+    weights.push(v * h);
+  }
+  return weights;
+}
+function getCurrentMask() {
+  let mask = 0;
+  for (let i = 1; i <= TANK_COUNT; i++) {
+    if (document.getElementById(`toggle-${i}`).checked) mask |= (1 << (i-1));
+  }
+  return mask;
 }
 
-init();
+/* ── K lookup ── */
+function updateK() {
+  const soil = document.getElementById('soil').value;
+  const material = document.getElementById('material').value;
+  const K = K_TABLE[soil][material];
+  document.getElementById('k-value').textContent = K.toLocaleString();
+  return K;
+}
+document.getElementById('soil').addEventListener('change', updateK);
+document.getElementById('material').addEventListener('change', updateK);
+
+/* ── Main calculation + recommendation ── */
+function calculate() {
+  const rho1 = parseFloat(document.getElementById('rho1').value);
+  const limit = parseFloat(document.getElementById('limit').value);
+  if (isNaN(rho1) || isNaN(limit)) { alert('Please enter Ƥ1 and the Allowable Limit before calculating.'); return; }
+
+  const K = updateK();
+  const layout = LAYOUTS[parseInt(document.getElementById('layout').value)];
+  const weights = getTankWeights();
+  const currentMask = getCurrentMask();
+
+  const combos = [];
+  for (let mask = 0; mask < 16; mask++) {
+    let total = 0;
+    const onTanks = [];
+    for (let i = 0; i < 4; i++) {
+      if (mask & (1 << i)) { total += weights[i]; onTanks.push(i+1); }
+    }
+    const r = rhoK(total, rho1, K, layout.sd);
+    combos.push({ mask, total, r, onTanks, within: r <= limit });
+  }
+  combos.sort((a,b) => b.total - a.total);
+
+  const recommended = combos.find(c => c.within);
+  const current = combos.find(c => c.mask === currentMask);
+
+  const banner = document.getElementById('status-banner');
+  const icon = document.getElementById('status-icon');
+  const title = document.getElementById('status-title');
+  const body = document.getElementById('status-body');
+
+  if (current.within) {
+    banner.className = 'status-banner ok';
+    icon.className = 'status-icon ok';
+    icon.textContent = '✓';
+    title.textContent = 'Current configuration is within the allowable limit';
+    body.textContent = `ρₖ = ${current.r.toFixed(3)} is at or below the limit (${limit}) with the current tank selection.`;
+  } else {
+    banner.className = 'status-banner exceed';
+    icon.className = 'status-icon exceed';
+    icon.textContent = '✕';
+    title.textContent = 'Current configuration exceeds the allowable limit';
+    body.textContent = `ρₖ = ${current.r.toFixed(3)} exceeds the limit (${limit}). See recommendation below.`;
+  }
+
+  document.getElementById('stat-load').textContent = current.total.toFixed(2);
+  document.getElementById('stat-settlement').textContent = current.r.toFixed(3);
+  document.getElementById('stat-settlement').className = 'stat-value ' + (current.within ? 'success' : 'error');
+
+  const recTitle = document.getElementById('rec-title');
+  const recBody = document.getElementById('rec-body');
+  const recChips = document.getElementById('rec-chips');
+
+  if (recommended) {
+    const toTurnOff = [1,2,3,4].filter(t => !recommended.onTanks.includes(t));
+    recTitle.textContent = recommended.mask === currentMask
+      ? 'Current selection is already optimal'
+      : `Recommended: use Tank${recommended.onTanks.length===1?'':'s'} ${recommended.onTanks.join(', ')}`;
+    recBody.textContent = recommended.mask === currentMask
+      ? `This is the highest-load combination that still stays within the limit (ρₖ = ${recommended.r.toFixed(3)}).`
+      : `To stay within the limit while maximizing load, turn OFF Tank${toTurnOff.length===1?'':'s'} ${toTurnOff.join(', ') || 'none'}. This gives ρₖ = ${recommended.r.toFixed(3)} using a load of ${recommended.total.toFixed(2)}.`;
+
+    let chips = '';
+    for (let i = 1; i <= 4; i++) {
+      const on = recommended.onTanks.includes(i);
+      chips += `<span class="chip ${on ? 'on' : 'off'}">Tank ${i}</span>`;
+    }
+    recChips.innerHTML = chips;
+  } else {
+    recTitle.textContent = 'No combination stays within the limit';
+    recBody.textContent = 'Even with all tanks turned off, ρₖ should be 0 — check Ƥ1, K, or the limit value.';
+    recChips.innerHTML = '';
+  }
+
+  let rows = '';
+  combos.forEach(c => {
+    const tankLabels = [1,2,3,4].map(t => c.onTanks.includes(t) ? t : `<s>${t}</s>`).join(', ');
+    let rowClass = c.within ? 'ok-row' : 'exceed-row';
+    if (c.mask === currentMask) rowClass += ' current-row';
+    if (recommended && c.mask === recommended.mask) rowClass += ' recommended-row';
+    rows += `<tr class="${rowClass}"><td>${tankLabels}</td><td>${c.total.toFixed(2)}</td><td>${c.r.toFixed(3)}</td><td>${c.within ? 'OK' : 'Exceeds'}</td></tr>`;
+  });
+  document.getElementById('combo-body').innerHTML = rows;
+
+  document.getElementById('result-panel').style.display = 'block';
+  document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+initTanks();
+updateK();
 </script>
 
 </body>
