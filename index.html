@@ -168,38 +168,47 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
   </div>
 
   <div class="notice pending">
-    <b>Placeholder values in use — confirm with client:</b> Ƥ1 (flexibility) defaults to <b>0.012</b> (length unit per Ton), matching a worked reference example (0.6 in settlement under a 50-ton test load). This is a stand-in until you get the client's actual single-pile load test result. Everything marked <span class="placeholder-tag">PLACEHOLDER</span> should be replaced after your meeting.
+    <b>Formula and definitions confirmed against the client's presentation</b> (slides 8–10: equation, variable definitions, and interaction factor chart). <b>Placeholder values still in use:</b> ρ1 (settlement under unit load) defaults to <b>0.3048 mm per Ton</b>, matching a worked reference example (15.24 mm settlement under a 50-ton test load) — a stand-in until you get the client's actual single-pile load test result. Allowable Limit defaults to <b>7 mm</b>. Everything marked <span class="placeholder-tag">PLACEHOLDER</span> should be replaced after your meeting.
   </div>
 
   <div class="validation-panel">
-    <b>✓ Engine validated</b> against a fully worked reference example (same L/D=25, νs=0.5 method): with ρ₁=0.012, K=2000, and piles at s/d=5 &amp; 7.07, this app's α-lookup and settlement formula reproduce the reference result (1.776) exactly.
+    <b>✓ Engine validated</b> two ways: (1) formula and every variable definition match the client's own presentation word-for-word; (2) the α-lookup and settlement calculation reproduce an independent worked example (same L/D=25, νs=0.5 method) exactly — ρ1=0.3048 mm/Ton, K=2000, piles at s/d=5 &amp; 7.07 → result 45.11 mm, matching precisely (converted from the source example's 1.776 in).
   </div>
 
   <div class="glossary-panel">
     <div class="glossary-title">The Equation, Explained</div>
-    <div class="glossary-formula">ρₖ &nbsp;=&nbsp; Ƥ1 &nbsp;×&nbsp; [ &nbsp;P&nbsp; + &nbsp;Σⱼ ( P &times; αⱼₖ ) &nbsp;]</div>
+    <div class="glossary-formula" style="line-height:1.8;">
+      ρₖ &nbsp;=&nbsp; ρ1
+      <span style="display:inline-block; vertical-align:middle; font-size:11px; text-align:center; margin:0 4px;">
+        <span style="display:block;">n</span>
+        <span style="display:block; font-size:15px;">Σ</span>
+        <span style="display:block;">j=1</span>
+        <span style="display:block;">j≠k</span>
+      </span>
+      ( Pⱼ &times; α<sub style="font-size:11px;">kj</sub> ) &nbsp;+&nbsp; ρ1 Pₖ
+    </div>
     <div class="glossary-sub">Settlement of the reference pile (k) = flexibility × (its own load + the load-weighted interaction from every other pile j in the group)</div>
 
     <div class="glossary-grid">
       <div class="glossary-item">
         <div class="g-symbol">ρₖ</div>
         <div class="g-body">
-          <div class="g-name">Settlement of the reference pile <span class="g-unit">same length unit as Ƥ1's numerator</span></div>
-          <div class="g-desc">The final answer. Shown as "Result — ρₖ" after you calculate.</div>
+          <div class="g-name">Settlement in pile k <span class="g-unit">mm</span></div>
+          <div class="g-desc">As defined in the source: "Settlement in pile k." Shown as "Result — ρₖ" after you calculate.</div>
         </div>
       </div>
       <div class="glossary-item">
-        <div class="g-symbol">Ƥ1</div>
+        <div class="g-symbol">ρ1</div>
         <div class="g-body">
-          <div class="g-name">Pile flexibility <span class="g-unit">length per Ton — e.g. in/ton or m/ton</span></div>
-          <div class="g-desc">Settlement of a single pile under one unit of load, from a real load test (e.g. "0.6 in under 50 tons" → Ƥ1 = 0.012). <span class="placeholder-tag">PLACEHOLDER</span> until the client provides their own test result.</div>
+          <div class="g-name">Settlement under unit load <span class="g-unit">mm per Ton</span></div>
+          <div class="g-desc">As defined in the source: "Settlement under unit load (displacement of single pile under unit load)." <span class="placeholder-tag">PLACEHOLDER</span> — currently 0.3048 mm/Ton (converted from a reference example: 15.24 mm under 50 tons); replace with the client's actual test result.</div>
         </div>
       </div>
       <div class="glossary-item">
-        <div class="g-symbol">P</div>
+        <div class="g-symbol">Pⱼ</div>
         <div class="g-body">
-          <div class="g-name">Load per pile <span class="g-unit">Tons</span></div>
-          <div class="g-desc">The load applied to each pile. In this app, P = total weight of all currently-active tanks (W = v × h, summed).</div>
+          <div class="g-name">Load in pile j <span class="g-unit">Tons</span></div>
+          <div class="g-desc">As defined in the source: "Load in pile j." In this app, Pⱼ = total weight of all currently-active tanks (W = v × h, summed), applied uniformly to each pile.</div>
         </div>
       </div>
       <div class="glossary-item">
@@ -210,10 +219,10 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
         </div>
       </div>
       <div class="glossary-item">
-        <div class="g-symbol">αⱼₖ</div>
+        <div class="g-symbol">α</div>
         <div class="g-body">
-          <div class="g-name">Interaction factor <span class="g-unit">dimensionless, 0 – 1</span></div>
-          <div class="g-desc">How much pile j's load affects pile k's settlement, based on spacing. Looked up from the Poulos &amp; Davis chart using s/d and K.</div>
+          <div class="g-name">Interaction factor between k &amp; j <span class="g-unit">dimensionless, 0 – 1</span></div>
+          <div class="g-desc">As defined in the source: "Interaction factor between K &amp; J." Looked up from the Poulos &amp; Davis chart using s/d and K.</div>
         </div>
       </div>
       <div class="glossary-item">
@@ -275,14 +284,14 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
     </div>
     <div class="panel">
       <div class="field">
-        <label>Ƥ1 — Pile Flexibility <span style="color:var(--amber)">(length per Ton)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
-        <input type="number" id="rho1" step="any" value="0.012" />
-        <div class="field-help">Defaults to 0.012 (from a reference load test: 0.6 in settlement under 50 tons). Replace with the client's actual test result once available — e.g. their own "X [in/mm/m] under Y tons."</div>
+        <label>ρ1 — Settlement Under Unit Load <span style="color:var(--amber)">(mm per Ton)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
+        <input type="number" id="rho1" step="any" value="0.3048" />
+        <div class="field-help">Defaults to 0.3048 mm/Ton (converted from a reference load test: 15.24 mm settlement under 50 tons). Replace with the client's actual test result once available — e.g. their own "X mm under Y tons."</div>
       </div>
       <div class="field">
-        <label>Allowable Limit <span style="color:var(--amber)">(same unit as ρₖ)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
+        <label>Allowable Limit <span style="color:var(--amber)">(mm)</span> <span class="placeholder-tag">PLACEHOLDER</span></label>
         <input type="number" id="limit" step="any" value="7" />
-        <div class="field-help">Set to whatever threshold the client confirms, in the same length unit as Ƥ1's numerator.</div>
+        <div class="field-help">Set to whatever threshold the client confirms, in mm.</div>
       </div>
     </div>
   </div>
@@ -305,7 +314,7 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
         <div class="stat-value amber" id="stat-load">—</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Resulting Settlement — ρₖ <span style="color:var(--text-muted)">(matches Ƥ1's unit)</span></div>
+        <div class="stat-label">Resulting Settlement — ρₖ <span style="color:var(--text-muted)">(mm)</span></div>
         <div class="stat-value" id="stat-settlement">—</div>
       </div>
     </div>
@@ -382,9 +391,12 @@ function alpha(s_d, K) {
   }
 }
 function rhoK(P, rho1, K, sdArray) {
+  // Client's equation: ρk = ρ1 * Σ(j=1, j≠k, to n)(Pj × αkj) + ρ1×Pk
+  // sdArray[0] is the reference pile k itself (s/d=0) — excluded from the sum,
+  // matching "j≠k" exactly. Loop starts at index 1, i.e. j=1..n excluding k.
   let sum = 0;
   for (let i = 1; i < sdArray.length; i++) sum += P * alpha(sdArray[i], K);
-  return rho1 * (P + sum);
+  return rho1 * (P + sum); // + rho1*Pk term (P = Pk here, uniform load)
 }
 
 /* ── Tank UI ── */
@@ -460,7 +472,7 @@ document.getElementById('material').addEventListener('change', updateK);
 function calculate() {
   const rho1 = parseFloat(document.getElementById('rho1').value);
   const limit = parseFloat(document.getElementById('limit').value);
-  if (isNaN(rho1) || isNaN(limit)) { alert('Please enter Ƥ1 and the Allowable Limit before calculating.'); return; }
+  if (isNaN(rho1) || isNaN(limit)) { alert('Please enter ρ1 and the Allowable Limit before calculating.'); return; }
 
   const K = updateK();
   const layout = LAYOUTS[parseInt(document.getElementById('layout').value)];
@@ -526,7 +538,7 @@ function calculate() {
     recChips.innerHTML = chips;
   } else {
     recTitle.textContent = 'No combination stays within the limit';
-    recBody.textContent = 'Even with all tanks turned off, ρₖ should be 0 — check Ƥ1, K, or the limit value.';
+    recBody.textContent = 'Even with all tanks turned off, ρₖ should be 0 — check ρ1, K, or the limit value.';
     recChips.innerHTML = '';
   }
 
