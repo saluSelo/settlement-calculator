@@ -137,6 +137,28 @@ label { display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; te
 .chip.off { text-decoration: line-through; opacity: .5; }
 
 .table-wrap { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+
+/* ── Interactive α chart ── */
+.chart-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 24px; }
+.chart-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 12px; }
+.chart-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; }
+.chart-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.chart-readouts { display: flex; gap: 10px; flex-wrap: wrap; }
+.chart-readout { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; }
+.chart-readout b { color: var(--amber); }
+#alpha-chart-svg { width: 100%; height: auto; display: block; touch-action: none; cursor: crosshair; }
+#alpha-chart-svg .grid-line { stroke: var(--border); stroke-width: 0.5; }
+#alpha-chart-svg .grid-line-major { stroke: var(--border); stroke-width: 1; }
+#alpha-chart-svg .axis-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; fill: var(--text-muted); }
+#alpha-chart-svg .axis-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; fill: var(--text); }
+#alpha-chart-svg .curve { fill: none; stroke-width: 1.6; }
+#alpha-chart-svg .curve-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; }
+#alpha-chart-svg .marker-dot { fill: var(--amber); stroke: var(--bg); stroke-width: 2; }
+#alpha-chart-svg .marker-line { stroke: var(--amber); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; }
+.chart-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+@media (max-width: 500px) { .chart-inputs { grid-template-columns: 1fr; } }
+.chart-input-group label { margin-bottom: 5px; }
+.chart-help { font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
 table { width: 100%; border-collapse: collapse; font-family:'IBM Plex Mono',monospace; font-size: 12px; }
 thead th { position: sticky; top:0; background: var(--surface-2); color: var(--text-muted); text-align:left; padding:9px 12px; font-size:10px; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
 tbody td { padding:7px 12px; border-bottom:1px solid var(--border); color: var(--text); }
@@ -187,7 +209,7 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
       </span>
       ( Pⱼ &times; α<sub style="font-size:11px;">kj</sub> ) &nbsp;+&nbsp; ρ1 Pₖ
     </div>
-    <div class="glossary-sub">Settlement of the reference pile (k) = flexibility × (its own load + the load-weighted interaction from every other pile j in the group)</div>
+    <div class="glossary-sub">Settlement in pile k = settlement under unit load × (the load-weighted interaction from every other pile j in the group + its own load)</div>
 
     <div class="glossary-grid">
       <div class="glossary-item">
@@ -296,6 +318,33 @@ tbody tr.ok-row td:nth-child(4) { color: var(--success); }
     </div>
   </div>
 
+  <div class="section-label">Interaction Factor (α) Chart — Interactive Lookup</div>
+  <div class="chart-panel">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Interaction Factor Chart (Poulos &amp; Davis, Fig. 6.3)</div>
+      </div>
+      <div class="chart-readouts">
+        <div class="chart-readout">s/d = <b id="chart-sd">—</b></div>
+        <div class="chart-readout">K = <b id="chart-k">—</b></div>
+        <div class="chart-readout">α = <b id="chart-alpha">—</b></div>
+      </div>
+    </div>
+    <div class="chart-sub">L/d = 25, ν<sub>s</sub> = 0.5. Curves show the 5 K columns from the source chart. Drag on the chart or type values below to see α at any (s/d, K).</div>
+    <svg id="alpha-chart-svg" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="chart-inputs">
+      <div class="chart-input-group">
+        <label>s/d — Pile spacing ratio</label>
+        <input type="number" id="probe-sd" step="any" value="5" min="0" oninput="updateProbeFromInputs()" />
+      </div>
+      <div class="chart-input-group">
+        <label>K — Pile-soil stiffness ratio</label>
+        <input type="number" id="probe-k" step="any" value="2000" min="0" oninput="updateProbeFromInputs()" />
+      </div>
+    </div>
+    <div class="chart-help">The marker snaps to the exact (s/d, K) you enter. On the chart, higher K values (stiffer piles vs. softer soil) produce higher α — meaning more load "leaks" to neighboring piles. K &gt; 1000 uses the K = ∞ curve. s/d &gt; 20 is treated as α = 0.</div>
+  </div>
+
   <button class="calc-btn" onclick="calculate()">Calculate Settlement &amp; Recommendation →</button>
 
   <div id="result-panel">
@@ -397,6 +446,122 @@ function rhoK(P, rho1, K, sdArray) {
   let sum = 0;
   for (let i = 1; i < sdArray.length; i++) sum += P * alpha(sdArray[i], K);
   return rho1 * (P + sum); // + rho1*Pk term (P = Pk here, uniform load)
+}
+
+/* ── Interactive α chart ── */
+const CHART = { xMin: 0, xMax: 20, yMin: 0, yMax: 1, padL: 55, padR: 30, padT: 20, padB: 55, W: 700, H: 420 };
+const CURVE_COLORS = {
+  10:    '#ef8c8c',
+  100:   '#e0a458',
+  500:   '#c9a67d',
+  1000:  '#5fb8ae',
+  'inf': '#7ed9a8',
+};
+const CURVE_LABELS = { 10: 'K = 10', 100: 'K = 100', 500: 'K = 500', 1000: 'K = 1000', 'inf': 'K = ∞' };
+
+function xToPx(x) { return CHART.padL + (x - CHART.xMin) / (CHART.xMax - CHART.xMin) * (CHART.W - CHART.padL - CHART.padR); }
+function yToPx(y) { return CHART.H - CHART.padB - (y - CHART.yMin) / (CHART.yMax - CHART.yMin) * (CHART.H - CHART.padT - CHART.padB); }
+function pxToX(px) { return CHART.xMin + (px - CHART.padL) / (CHART.W - CHART.padL - CHART.padR) * (CHART.xMax - CHART.xMin); }
+
+function drawAlphaChart() {
+  const svg = document.getElementById('alpha-chart-svg');
+  let html = '';
+
+  // Vertical gridlines (at each integer s/d)
+  for (let x = 0; x <= 20; x++) {
+    const px = xToPx(x);
+    const major = (x % 5 === 0);
+    html += `<line class="${major ? 'grid-line-major' : 'grid-line'}" x1="${px}" y1="${CHART.padT}" x2="${px}" y2="${CHART.H - CHART.padB}"/>`;
+    if (major) html += `<text class="axis-label" x="${px}" y="${CHART.H - CHART.padB + 14}" text-anchor="middle">${x}</text>`;
+  }
+  // Horizontal gridlines (every 0.1 α)
+  for (let y = 0; y <= 1.0001; y += 0.1) {
+    const py = yToPx(y);
+    const major = (Math.round(y * 10) % 2 === 0);
+    html += `<line class="${major ? 'grid-line-major' : 'grid-line'}" x1="${CHART.padL}" y1="${py}" x2="${CHART.W - CHART.padR}" y2="${py}"/>`;
+    if (major) html += `<text class="axis-label" x="${CHART.padL - 8}" y="${py + 3}" text-anchor="end">${y.toFixed(1)}</text>`;
+  }
+
+  // Axis titles
+  html += `<text class="axis-title" x="${(CHART.padL + CHART.W - CHART.padR) / 2}" y="${CHART.H - 15}" text-anchor="middle">s/d</text>`;
+  html += `<text class="axis-title" x="18" y="${(CHART.padT + CHART.H - CHART.padB) / 2}" text-anchor="middle" transform="rotate(-90, 18, ${(CHART.padT + CHART.H - CHART.padB) / 2})">α</text>`;
+
+  // Draw each K curve
+  const columns = [10, 100, 500, 1000, 'inf'];
+  columns.forEach(col => {
+    const color = CURVE_COLORS[col];
+    let pts = [];
+    for (let x = 0; x <= 20; x += 0.1) {
+      const a = interpOverSD(x, col);
+      pts.push(`${xToPx(x).toFixed(2)},${yToPx(a).toFixed(2)}`);
+    }
+    html += `<polyline class="curve" points="${pts.join(' ')}" stroke="${color}"/>`;
+
+    // Label on the left edge of the curve
+    const yLabel = ALPHA_TABLE[col][1]; // α at s/d=1
+    const pxLbl = xToPx(1.15);
+    const pyLbl = yToPx(yLabel);
+    html += `<text class="curve-label" x="${pxLbl}" y="${pyLbl}" fill="${color}">${CURVE_LABELS[col]}</text>`;
+  });
+
+  // Marker layer (updated by updateChartMarker)
+  html += `<g id="chart-marker-group"></g>`;
+
+  svg.innerHTML = html;
+}
+
+function updateChartMarker(s_d, K) {
+  const a = alpha(Math.max(0, Math.min(20, s_d)), K);
+  const marker = document.getElementById('chart-marker-group');
+
+  if (s_d < 0 || s_d > 20) {
+    marker.innerHTML = '';
+    return a;
+  }
+
+  const px = xToPx(s_d);
+  const py = yToPx(a);
+  let m = '';
+  m += `<line class="marker-line" x1="${CHART.padL}" y1="${py}" x2="${px}" y2="${py}"/>`;
+  m += `<line class="marker-line" x1="${px}" y1="${CHART.H - CHART.padB}" x2="${px}" y2="${py}"/>`;
+  m += `<circle class="marker-dot" cx="${px}" cy="${py}" r="6"/>`;
+  marker.innerHTML = m;
+  return a;
+}
+
+function refreshChartReadouts(s_d, K, a) {
+  document.getElementById('chart-sd').textContent = s_d.toFixed(3);
+  document.getElementById('chart-k').textContent = K.toLocaleString();
+  document.getElementById('chart-alpha').textContent = a.toFixed(4);
+}
+
+function updateProbeFromInputs() {
+  const s_d = parseFloat(document.getElementById('probe-sd').value);
+  const K = parseFloat(document.getElementById('probe-k').value);
+  if (isNaN(s_d) || isNaN(K) || K < 0) return;
+  const a = updateChartMarker(s_d, K);
+  refreshChartReadouts(s_d, K, a);
+}
+
+function chartDrag(e) {
+  const svg = document.getElementById('alpha-chart-svg');
+  const rect = svg.getBoundingClientRect();
+  const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+  // Convert client coord → SVG viewBox coord
+  const svgX = (clientX - rect.left) / rect.width * CHART.W;
+  const s_d = Math.max(0, Math.min(20, pxToX(svgX)));
+  document.getElementById('probe-sd').value = s_d.toFixed(3);
+  updateProbeFromInputs();
+}
+
+function initChartEvents() {
+  const svg = document.getElementById('alpha-chart-svg');
+  let dragging = false;
+  svg.addEventListener('mousedown', e => { dragging = true; chartDrag(e); });
+  window.addEventListener('mouseup', () => { dragging = false; });
+  svg.addEventListener('mousemove', e => { if (dragging) chartDrag(e); });
+  svg.addEventListener('touchstart', e => { e.preventDefault(); chartDrag(e); }, { passive: false });
+  svg.addEventListener('touchmove', e => { e.preventDefault(); chartDrag(e); }, { passive: false });
 }
 
 /* ── Tank UI ── */
@@ -558,6 +723,18 @@ function calculate() {
 
 initTanks();
 updateK();
+drawAlphaChart();
+initChartEvents();
+
+// Auto-sync the chart's probe K to whatever soil/material picks
+function syncChartKFromDropdowns() {
+  const K = updateK();
+  document.getElementById('probe-k').value = K;
+  updateProbeFromInputs();
+}
+document.getElementById('soil').addEventListener('change', syncChartKFromDropdowns);
+document.getElementById('material').addEventListener('change', syncChartKFromDropdowns);
+syncChartKFromDropdowns(); // initial sync
 </script>
 
 </body>
